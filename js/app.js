@@ -251,12 +251,26 @@ function renderInventoryTable() {
             ? `<img src="${product.imageUrl}" alt="${product.name}" onerror="this.onerror=null;this.outerHTML='<i class=\\'fa-solid fa-image text-muted fa-2x\\'></i>';" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">` 
             : `<i class="fa-solid fa-image text-muted fa-2x"></i>`;
 
+        const stockQty = product.stock !== undefined ? parseInt(product.stock, 10) : 0;
+        const isOutOfStock = stockQty <= 0;
+        const isLowStock = stockQty > 0 && stockQty < 10;
+        
+        let stockBadgeHTML = '<span class="badge bg-success stock-badge">Disponible</span>';
+        if (isOutOfStock) {
+            stockBadgeHTML = '<span class="badge bg-danger stock-badge">Agotado</span>';
+        } else if (isLowStock) {
+            stockBadgeHTML = '<span class="badge bg-warning text-dark stock-badge">¡Poco Stock!</span>';
+        }
+
         tr.innerHTML = `
             <td>${imageContent}</td>
             <td class="fw-bold">${product.name}</td>
             <td><span class="badge bg-secondary">${product.category || 'N/A'}</span></td>
             <td class="text-success fw-bold">$${parseFloat(product.price).toFixed(2)}</td>
-            <td><span class="badge bg-success stock-badge">Disponible</span></td>
+            <td>
+                <div>Stock: ${stockQty}</div>
+                ${stockBadgeHTML}
+            </td>
             <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-2 btn-edit" data-id="${product.id}">
                     <i class="fa-solid fa-pen"></i> Editar
@@ -395,6 +409,89 @@ async function deleteProduct(productId) {
 }
 
 // ==========================================
+// BAJAS (SPOILED INVENTORY) LOGIC
+// ==========================================
+const btnShowBajas = document.getElementById('btn-show-bajas');
+const bajasModalEl = document.getElementById('bajas-modal');
+const bajasForm = document.getElementById('bajas-form');
+let bajasModal;
+if (bajasModalEl) {
+    bajasModal = new bootstrap.Modal(bajasModalEl);
+}
+
+if (btnShowBajas) {
+    btnShowBajas.addEventListener('click', () => {
+        const selectProd = document.getElementById('baja-producto');
+        selectProd.innerHTML = '<option value="" disabled selected>Seleccione el producto...</option>';
+        
+        // Populate select with current inventory
+        globalProducts.forEach(prod => {
+            const opt = document.createElement('option');
+            opt.value = prod.id;
+            opt.textContent = `${prod.name} (Stock actual: ${prod.stock || 0})`;
+            selectProd.appendChild(opt);
+        });
+        
+        bajasForm.reset();
+        bajasModal.show();
+    });
+}
+
+if (bajasForm) {
+    bajasForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btnSubmitBaja = document.getElementById('btn-submit-baja');
+        const originalText = btnSubmitBaja.innerHTML;
+        
+        const productId = document.getElementById('baja-producto').value;
+        const cantidad = parseInt(document.getElementById('baja-cantidad').value, 10);
+        const motivo = document.getElementById('baja-motivo').value;
+        
+        const prodMatch = globalProducts.find(p => p.id === productId);
+        if (!prodMatch) return;
+        
+        if (cantidad > (prodMatch.stock || 0)) {
+            showToast("La cantidad a retirar es mayor al stock disponible", "error");
+            return;
+        }
+        
+        btnSubmitBaja.disabled = true;
+        btnSubmitBaja.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Procesando...';
+        
+        try {
+            // 1. Add record to bajas collection
+            await addDoc(collection(db, 'bajas'), {
+                productId: prodMatch.id,
+                productName: prodMatch.name,
+                cantidad: cantidad,
+                motivo: motivo,
+                date: serverTimestamp(),
+                registradoPor: auth.currentUser ? auth.currentUser.email : 'Desconocido'
+            });
+            
+            // 2. Deduct stock from productos
+            const productRef = doc(db, 'productos', prodMatch.id);
+            await updateDoc(productRef, {
+                stock: increment(-cantidad)
+            });
+            
+            bajasModal.hide();
+            showToast("Baja registrada correctamente", "success");
+            
+            // fetchProducts() is already triggered by onSnapshot automatically
+            
+        } catch (error) {
+            console.error("Error al registrar baja:", error);
+            showToast("Hubo un error al registrar la baja", "error");
+        } finally {
+            btnSubmitBaja.disabled = false;
+            btnSubmitBaja.innerHTML = originalText;
+        }
+    });
+}
+
+// ==========================================
 // POS AND SHOPPING CART LOGIC
 // ==========================================
 const productsGrid = document.getElementById('products-grid');
@@ -419,7 +516,7 @@ function renderPOSProducts() {
         const isOutOfStock = stockQty <= 0;
         
         const col = document.createElement('div');
-        col.className = 'col-6 col-md-4 mb-3';
+        col.className = 'col-12 col-sm-6 col-md-4 mb-3';
         
         const imageContent = product.imageUrl && product.imageUrl.trim() !== ''
             ? `<img src="${product.imageUrl}" alt="${product.name}" onerror="this.onerror=null;this.outerHTML='<i class=\\'fa-solid fa-bread-slice fa-3x text-muted\\'></i>';">` 
@@ -431,6 +528,9 @@ function renderPOSProducts() {
         if (isOutOfStock) {
             cardClass += ' opacity-50';
             stockBadge += `<br><span class="badge bg-danger mt-1">Agotado</span>`;
+        } else if (stockQty > 0 && stockQty < 10) {
+            cardClass += ' low-stock-alert';
+            stockBadge += `<br><span class="badge bg-warning text-dark mt-1">¡Poco Stock!</span>`;
         }
 
         col.innerHTML = `
@@ -969,6 +1069,7 @@ async function fetchFiados() {
 // ==========================================
 const reportDatePicker = document.getElementById('report-date-picker');
 const reportsTableBody = document.querySelector('#reports-table tbody');
+const bajasTableBody = document.querySelector('#bajas-table tbody');
 const btnExportPdf = document.getElementById('btn-export-pdf');
 
 // ==========================================
@@ -1184,6 +1285,75 @@ window.loadDailySalesTable = async function(dateString) {
     } catch (error) {
         console.error("Error loading daily sales:", error);
         reportsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Error al cargar el reporte.</td></tr>';
+    }
+    
+    // Also load Bajas for this date
+    loadBajasTable(dateString);
+};
+
+window.loadBajasTable = async function(dateString) {
+    if (!bajasTableBody) return;
+    
+    bajasTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando bajas...</td></tr>';
+    
+    try {
+        const [year, month, day] = dateString.split('-');
+        
+        // Start of day
+        const startOfDay = new Date(year, month - 1, day);
+        startOfDay.setHours(0, 0, 0, 0);
+        
+        // End of day
+        const endOfDay = new Date(year, month - 1, day);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        const q = query(
+            collection(db, 'bajas'),
+            where('date', '>=', startOfDay),
+            where('date', '<=', endOfDay)
+        );
+        
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            bajasTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No se encontraron bajas para esta fecha</td></tr>';
+            return;
+        }
+        
+        bajasTableBody.innerHTML = '';
+        
+        const bajas = [];
+        snapshot.forEach(docSnap => {
+            bajas.push(docSnap.data());
+        });
+        bajas.sort((a, b) => b.date - a.date); // Descending by time
+        
+        bajas.forEach(baja => {
+            let dateObj = new Date();
+            if (baja.date && typeof baja.date.toDate === 'function') {
+                dateObj = baja.date.toDate();
+            } else if (baja.date) {
+                dateObj = new Date(baja.date);
+            }
+            
+            const timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold">${timeString}</div>
+                </td>
+                <td class="fw-bold text-danger">${baja.productName || 'N/A'}</td>
+                <td><span class="badge bg-secondary">${baja.cantidad}</span></td>
+                <td><small class="text-muted">${baja.motivo}</small></td>
+                <td><small class="text-muted"><i class="fa-solid fa-user me-1"></i>${baja.registradoPor || 'Desconocido'}</small></td>
+            `;
+            bajasTableBody.appendChild(tr);
+        });
+        
+    } catch (error) {
+        console.error("Error loading bajas:", error);
+        bajasTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar las bajas.</td></tr>';
     }
 };
 

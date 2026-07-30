@@ -13,9 +13,9 @@
     <style>
         /* Premium Bakery Theme */
         :root {
-            --bakery-bg: #F4EFE6;
+            --bakery-bg: #f4f6f8;
             --bakery-text: #3E2723;
-            --bakery-card: #FDFBFA;
+            --bakery-card: #ffffff;
         }
         
         body {
@@ -31,9 +31,42 @@
         .text-bakery-dark {
             color: var(--bakery-text) !important;
         }
+
+        /* Tabs Styling */
+        .nav-tabs .nav-link {
+            color: #555555 !important;
+            font-weight: 600;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #0d6efd !important;
+        }
+
+        /* Flashing Low Stock Alert */
+        @keyframes pulse-border {
+            0% { border-color: #dc3545; box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            50% { border-color: #ff9999; box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { border-color: #dc3545; box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        .low-stock-alert {
+            animation: pulse-border 2s infinite;
+            border: 2px solid #dc3545 !important;
+        }
+
+        /* Responsive Table Overrides */
+        .table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        .table-responsive table th, 
+        .table-responsive table td {
+            white-space: nowrap;
+        }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -45,22 +78,22 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item auth-only d-none">
-                        <a class="nav-link" href="#" id="nav-pos"><i class="fa-solid fa-cash-register me-1"></i>POS</a>
+                        <a class="nav-link" href="#" id="nav-pos" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show"><i class="fa-solid fa-cash-register me-1"></i>POS</a>
                     </li>
                     <li class="nav-item auth-only d-none">
-                        <a class="nav-link" href="#" id="nav-inventory"><i class="fa-solid fa-boxes-stacked me-1"></i>Inventario</a>
+                        <a class="nav-link" href="#" id="nav-inventory" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show"><i class="fa-solid fa-boxes-stacked me-1"></i>Inventario</a>
                     </li>
                     <li class="nav-item auth-only d-none">
-                        <a class="nav-link" href="#" id="nav-reports"><i class="fa-solid fa-chart-bar me-1"></i>Reportes</a>
+                        <a class="nav-link" href="#" id="nav-reports" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show"><i class="fa-solid fa-chart-bar me-1"></i>Reportes</a>
                     </li>
                     <li class="nav-item auth-only d-none">
-                        <a class="nav-link" href="#" id="nav-fiados"><i class="fa-solid fa-book-open-reader me-1"></i>Fiados</a>
+                        <a class="nav-link" href="#" id="nav-fiados" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show"><i class="fa-solid fa-book-open-reader me-1"></i>Fiados</a>
                     </li>
                     <li class="nav-item" id="nav-login-container">
-                        <a class="nav-link" href="#" id="nav-login"><i class="fa-solid fa-user me-1"></i>Login</a>
+                        <a class="nav-link" href="#" id="nav-login" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show"><i class="fa-solid fa-user me-1"></i>Login</a>
                     </li>
                     <li class="nav-item auth-only d-none" id="nav-logout-container">
-                        <a class="nav-link" href="#" id="nav-logout"><i class="fa-solid fa-right-from-bracket me-1"></i>Salir</a>
+                        <a class="nav-link" href="#" id="nav-logout" data-bs-toggle="collapse" data-bs-target=".navbar-collapse.show"><i class="fa-solid fa-right-from-bracket me-1"></i>Salir</a>
                     </li>
                 </ul>
             </div>
@@ -159,14 +192,19 @@
         <!-- 3. Inventory View -->
         <div id="inventory-view" class="view-container d-none">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fa-solid fa-boxes-stacked me-2"></i>Gestión de Inventario</h5>
-                    <button class="btn btn-primary btn-sm" id="btn-add-product">
-                        <i class="fa-solid fa-plus me-1"></i>Nuevo Producto
-                    </button>
+                <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <h5 class="mb-0 text-center text-md-start"><i class="fa-solid fa-boxes-stacked me-2"></i>Gestión de Inventario</h5>
+                    <div class="d-flex justify-content-center gap-2 w-100 w-md-auto flex-wrap">
+                        <button class="btn btn-outline-danger btn-sm" id="btn-show-bajas">
+                            <i class="fa-solid fa-trash-can me-1"></i>Registrar Baja
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btn-add-product">
+                            <i class="fa-solid fa-plus me-1"></i>Nuevo Producto
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                         <table class="table table-hover align-middle" id="inventory-table">
                             <thead class="table-light">
                                 <tr>
@@ -193,13 +231,13 @@
         <!-- 4. Reports View -->
         <div id="reports-view" class="view-container d-none">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
+                <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start w-100 w-md-auto">
                         <h5 class="mb-0 me-3"><i class="fa-solid fa-chart-bar me-2"></i>Historial de Ventas</h5>
                         <input type="date" id="report-date-picker" class="form-control form-control-sm w-auto">
                     </div>
-                    <div>
-                        <button class="btn btn-warning btn-sm me-2 fw-bold" id="btn-close-drawer">
+                    <div class="d-flex justify-content-center gap-2 w-100 w-md-auto flex-wrap">
+                        <button class="btn btn-warning btn-sm fw-bold" id="btn-close-drawer">
                             <i class="fa-solid fa-lock me-1"></i>Cierre de Caja
                         </button>
                         <button class="btn btn-outline-secondary btn-sm" id="btn-export-pdf">
@@ -236,39 +274,76 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-end mb-4">
-                        <div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end mb-4 gap-2">
+                        <div class="w-100 w-md-auto">
                             <span class="d-block text-muted small fw-bold mb-1">Rango de Exportación PDF:</span>
-                            <div class="btn-group" role="group" aria-label="Filtros de tiempo">
+                            <div class="btn-group d-flex d-md-inline-flex w-100 w-md-auto" role="group" aria-label="Filtros de tiempo">
                                 <input type="radio" class="btn-check" name="btnradio" id="filter-today" autocomplete="off" checked>
                                 <label class="btn btn-outline-primary" for="filter-today">Hoy</label>
 
                                 <input type="radio" class="btn-check" name="btnradio" id="filter-week" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="filter-week">Esta Semana</label>
+                                <label class="btn btn-outline-primary" for="filter-week">Semana</label>
 
                                 <input type="radio" class="btn-check" name="btnradio" id="filter-month" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="filter-month">Este Mes</label>
+                                <label class="btn btn-outline-primary" for="filter-month">Mes</label>
                             </div>
                         </div>
                     </div>
+                    <!-- Tabs Nav -->
+                    <ul class="nav nav-tabs mb-4" id="reportesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas-tab-pane" type="button" role="tab" aria-controls="ventas-tab-pane" aria-selected="true"><i class="fa-solid fa-chart-line me-2"></i>Historial de Ventas</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="bajas-tab" data-bs-toggle="tab" data-bs-target="#bajas-tab-pane" type="button" role="tab" aria-controls="bajas-tab-pane" aria-selected="false"><i class="fa-solid fa-trash-can me-2"></i>Historial de Bajas / Mermas</button>
+                        </li>
+                    </ul>
                     
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle" id="reports-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Artículos (Cant)</th>
-                                    <th>Total</th>
-                                    <th>IP Origen</th>
-                                    <th class="text-end">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">Seleccione un filtro para cargar reportes</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Tabs Content -->
+                    <div class="tab-content" id="reportesTabsContent">
+                        <!-- Ventas Tab -->
+                        <div class="tab-pane fade show active" id="ventas-tab-pane" role="tabpanel" aria-labelledby="ventas-tab" tabindex="0">
+                            <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                                <table class="table table-hover align-middle" id="reports-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Artículos (Cant)</th>
+                                            <th>Total</th>
+                                            <th>IP Origen</th>
+                                            <th class="text-end">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-4">Seleccione un filtro para cargar reportes</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Bajas Tab -->
+                        <div class="tab-pane fade" id="bajas-tab-pane" role="tabpanel" aria-labelledby="bajas-tab" tabindex="0">
+                            <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                                <table class="table table-hover align-middle" id="bajas-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Motivo</th>
+                                            <th>Registrado Por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-4">Seleccione una fecha para cargar bajas</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -515,6 +590,42 @@
                         <button type="submit" class="btn btn-danger w-100 fw-bold" id="btn-submit-password">
                             <i class="fa-solid fa-key me-2"></i>Actualizar Contraseña
                         </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bajas (Spoiled Inventory) Modal -->
+    <div class="modal fade" id="bajas-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-trash-can me-2"></i>Registrar Baja de Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="bajas-form">
+                        <div class="mb-3">
+                            <label for="baja-producto" class="form-label fw-bold">Producto</label>
+                            <select class="form-select" id="baja-producto" required>
+                                <option value="" disabled selected>Seleccione el producto...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="baja-cantidad" class="form-label fw-bold">Cantidad a retirar</label>
+                            <input type="number" class="form-control" id="baja-cantidad" min="1" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="baja-motivo" class="form-label fw-bold">Motivo (Ej. Dañado, Caducado)</label>
+                            <textarea class="form-control" id="baja-motivo" rows="3" required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger" id="btn-submit-baja">
+                                <i class="fa-solid fa-check me-1"></i>Confirmar Baja
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
