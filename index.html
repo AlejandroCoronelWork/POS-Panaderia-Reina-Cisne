@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS - Panadería Reina del Cisne</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Premium Bakery Theme */
+        :root {
+            --bakery-bg: #F4EFE6;
+            --bakery-text: #3E2723;
+            --bakery-card: #FDFBFA;
+        }
+        
+        body {
+            background-color: var(--bakery-bg) !important;
+            color: var(--bakery-text);
+        }
+        
+        .card, 
+        .modal-content {
+            background-color: var(--bakery-card) !important;
+        }
+        
+        .text-bakery-dark {
+            color: var(--bakery-text) !important;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fa-solid fa-bread-slice me-2"></i>Reina del Cisne POS</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item auth-only d-none">
+                        <a class="nav-link" href="#" id="nav-pos"><i class="fa-solid fa-cash-register me-1"></i>POS</a>
+                    </li>
+                    <li class="nav-item auth-only d-none">
+                        <a class="nav-link" href="#" id="nav-inventory"><i class="fa-solid fa-boxes-stacked me-1"></i>Inventario</a>
+                    </li>
+                    <li class="nav-item auth-only d-none">
+                        <a class="nav-link" href="#" id="nav-reports"><i class="fa-solid fa-chart-bar me-1"></i>Reportes</a>
+                    </li>
+                    <li class="nav-item auth-only d-none">
+                        <a class="nav-link" href="#" id="nav-fiados"><i class="fa-solid fa-book-open-reader me-1"></i>Fiados</a>
+                    </li>
+                    <li class="nav-item" id="nav-login-container">
+                        <a class="nav-link" href="#" id="nav-login"><i class="fa-solid fa-user me-1"></i>Login</a>
+                    </li>
+                    <li class="nav-item auth-only d-none" id="nav-logout-container">
+                        <a class="nav-link" href="#" id="nav-logout"><i class="fa-solid fa-right-from-bracket me-1"></i>Salir</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mt-4">
+
+        <!-- 1. Login View -->
+        <div id="login-view" class="view-container">
+            <div class="row justify-content-center">
+                <div class="col-md-5 mt-5">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-primary text-white text-center py-3">
+                            <h4 class="mb-0"><i class="fa-solid fa-lock me-2"></i>Iniciar Sesión</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Correo Electrónico</label>
+                                    <input type="email" class="form-control" id="email" placeholder="ejemplo@correo.com" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="password" class="form-label">Contraseña</label>
+                                    <input type="password" class="form-control" id="password" placeholder="********" required>
+                                </div>
+                                <div id="login-error-msg" class="alert alert-danger d-none mt-3 text-center text-sm p-2" role="alert"></div>
+                                <button type="submit" class="btn btn-primary w-100 py-2">Ingresar</button>
+                                <div class="text-center mt-3">
+                                    <a href="#" id="btn-forgot-password" class="text-decoration-none" style="font-size: 0.9rem; color: var(--primary-color);">Restablecer contraseña</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. POS View -->
+        <div id="pos-view" class="view-container d-none">
+            <div class="row">
+                <!-- Products Grid -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0"><i class="fa-solid fa-bread-slice me-2"></i>Productos</h5>
+                        </div>
+                        <div class="card-body bg-light">
+                            <div class="row g-3" id="products-grid">
+                                <!-- Product items will be dynamically injected here -->
+                                <div class="col-12 text-center text-muted py-5">
+                                    <p>Cargando productos...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Shopping Cart / Ticket Summary -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow-sm border-0 h-100 flex-column">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0"><i class="fa-solid fa-cart-shopping me-2"></i>Ticket de Venta</h5>
+                        </div>
+                        <div class="card-body p-0 d-flex flex-column" style="max-height: 500px; overflow-y: auto;">
+                            <ul class="list-group list-group-flush flex-grow-1" id="cart-items">
+                                <!-- Cart items will be dynamically injected here -->
+                                <li class="list-group-item text-center text-muted py-5">
+                                    El carrito está vacío
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-white border-top-0 pt-0">
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <strong class="fs-5">Total:</strong>
+                                <h3 class="mb-0 text-success fw-bold" id="cart-total">$0.00</h3>
+                            </div>
+                            <div class="d-flex gap-2 mb-2">
+                                <button class="btn btn-success flex-grow-1 py-3 fw-bold fs-5" id="btn-checkout">
+                                    <i class="fa-solid fa-money-bill-wave me-2"></i>Cobrar
+                                </button>
+                                <button class="btn btn-warning py-3 fw-bold fs-5 text-dark" id="btn-fiar" style="width: 120px;">
+                                    <i class="fa-solid fa-hand-holding-dollar me-2"></i>Fiar
+                                </button>
+                            </div>
+                            <button class="btn btn-outline-danger w-100" id="btn-clear-cart">
+                                Vaciar Ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Inventory View -->
+        <div id="inventory-view" class="view-container d-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fa-solid fa-boxes-stacked me-2"></i>Gestión de Inventario</h5>
+                    <button class="btn btn-primary btn-sm" id="btn-add-product">
+                        <i class="fa-solid fa-plus me-1"></i>Nuevo Producto
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="inventory-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Imagen</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Inventory items will be dynamically injected here -->
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Cargando inventario...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Reports View -->
+        <div id="reports-view" class="view-container d-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0 me-3"><i class="fa-solid fa-chart-bar me-2"></i>Historial de Ventas</h5>
+                        <input type="date" id="report-date-picker" class="form-control form-control-sm w-auto">
+                    </div>
+                    <div>
+                        <button class="btn btn-warning btn-sm me-2 fw-bold" id="btn-close-drawer">
+                            <i class="fa-solid fa-lock me-1"></i>Cierre de Caja
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-export-pdf">
+                            <i class="fa-solid fa-file-pdf me-1"></i>Exportar a PDF
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Daily Revenue Dashboard -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body text-center text-bakery-dark">
+                                    <h6 class="card-title text-uppercase mb-2 fw-bolder"><i class="fa-solid fa-cash-register me-2"></i>Fondo Inicial</h6>
+                                    <h3 class="mb-0 fw-bolder" id="dashboard-fondo">$0.00</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body text-center text-bakery-dark">
+                                    <h6 class="card-title text-uppercase mb-2 fw-bolder"><i class="fa-solid fa-arrow-trend-up me-2"></i>Ingresos por Ventas</h6>
+                                    <h3 class="mb-0 fw-bolder" id="dashboard-ingresos">$0.00</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow border-0 h-100">
+                                <div class="card-body text-center text-bakery-dark">
+                                    <h6 class="card-title text-uppercase mb-2 fw-bolder"><i class="fa-solid fa-wallet me-2"></i>Esperado en Caja</h6>
+                                    <h3 class="mb-0 fw-bolder" id="dashboard-esperado">$0.00</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-end mb-4">
+                        <div>
+                            <span class="d-block text-muted small fw-bold mb-1">Rango de Exportación PDF:</span>
+                            <div class="btn-group" role="group" aria-label="Filtros de tiempo">
+                                <input type="radio" class="btn-check" name="btnradio" id="filter-today" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="filter-today">Hoy</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="filter-week" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="filter-week">Esta Semana</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="filter-month" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="filter-month">Este Mes</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="reports-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Artículos (Cant)</th>
+                                    <th>Total</th>
+                                    <th>IP Origen</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Seleccione un filtro para cargar reportes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 5. Fiados View -->
+        <div id="fiados-view" class="view-container d-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fa-solid fa-book-open-reader me-2"></i>Cuentas por Cobrar (Fiados)</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="fiados-accordion">
+                        <div class="text-center text-muted py-5">
+                            Cargando fiados...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white border-0" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title" id="productModalLabel"><i class="fa-solid fa-box me-2"></i>Detalles del Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background-color: #fdfaf6;">
+                    <form id="product-form">
+                        <input type="hidden" id="modal-product-id">
+                        <div class="mb-3">
+                            <label for="modal-product-name" class="form-label text-dark fw-bold">Nombre</label>
+                            <input type="text" class="form-control" id="modal-product-name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="modal-product-price" class="form-label text-dark fw-bold">Precio ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="modal-product-price" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modal-product-category" class="form-label text-dark fw-bold">Categoría</label>
+                                <select class="form-select" id="modal-product-category">
+                                    <option value="Panadería">Panadería</option>
+                                    <option value="Pastelería">Pastelería</option>
+                                    <option value="Bebidas">Bebidas</option>
+                                    <option value="Lácteos">Lácteos</option>
+                                    <option value="Otros">Otros</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="modal-product-stock" class="form-label text-dark fw-bold">Stock en Vitrina</label>
+                                <input type="number" class="form-control" id="modal-product-stock" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modal-product-image" class="form-label text-dark fw-bold">URL de la Imagen (opcional)</label>
+                                <input type="url" class="form-control" id="modal-product-image" placeholder="https://...">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light border-0" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-product">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fiar Modal -->
+    <div class="modal fade" id="fiar-modal" tabindex="-1" aria-labelledby="fiarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-dark border-0" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title" id="fiarModalLabel"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Fiar a Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-4 text-start">
+                        <label for="fiar-client-name" class="form-label text-dark fw-bold">Nombre del Cliente</label>
+                        <input type="text" class="form-control form-control-lg text-center" id="fiar-client-name" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <button type="button" class="btn btn-warning w-100 py-3 fs-5 fw-bold text-dark" id="btn-confirm-fiar">Confirmar Fiado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal fade" id="payment-modal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white border-0" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title" id="paymentModalLabel"><i class="fa-solid fa-money-bill-wave me-2"></i>Pago</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <h3 class="mb-4">Total: <span id="payment-total-display" class="text-success fw-bold">$0.00</span></h3>
+                    
+                    <div class="mb-4 text-start">
+                        <label for="payment-received" class="form-label text-dark fw-bold">Efectivo Recibido ($)</label>
+                        <input type="number" step="0.01" class="form-control form-control-lg text-center" id="payment-received" placeholder="Ej: 20.00">
+                    </div>
+                    
+                    <div class="mb-4 text-start">
+                        <label class="form-label text-dark fw-bold">Cambio a devolver</label>
+                        <div class="alert alert-secondary fs-4 fw-bold text-center mb-0" id="payment-change-display">$0.00</div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary w-100 py-3 fs-5 fw-bold" id="btn-confirm-payment" disabled>Confirmar Venta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Success Modal -->
+    <div class="modal fade" id="checkout-success-modal" tabindex="-1" aria-labelledby="checkoutSuccessLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg text-center p-4" style="border-radius: 20px;">
+                <div class="modal-body">
+                    <i class="fa-solid fa-circle-check text-success mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-dark fw-bold mb-2">¡Venta completada exitosamente!</h4>
+                    <p class="text-muted mb-4">Total cobrado:</p>
+                    <h2 id="checkout-final-total" class="text-success fw-bold mb-4">$0.00</h2>
+                    <button type="button" class="btn btn-primary w-100 py-2 fs-5 fw-bold" data-bs-dismiss="modal">Nueva Venta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Details Modal (Receipt View) -->
+    <div class="modal fade" id="sale-details-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content text-center p-3" style="font-family: 'Courier New', Courier, monospace; background-color: #fcfbf7; border: 1px dashed #ccc;">
+                <div class="modal-header border-0 flex-column pb-0">
+                    <h5 class="fw-bold mb-1">Panadería Reina del Cisne</h5>
+                    <p class="text-muted small mb-0">Ticket de Venta</p>
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start mt-3 pt-0">
+                    <div id="receipt-metadata" class="mb-2 small text-muted">
+                        <!-- Vendedor/Cliente info will be injected here -->
+                    </div>
+                    <hr class="border-secondary border-1 border-dashed mt-0">
+                    <ul id="receipt-items-list" class="list-unstyled mb-0">
+                        <!-- Items will be injected here -->
+                    </ul>
+                    <hr class="border-secondary border-1 border-dashed">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="fs-5">TOTAL</strong>
+                        <strong class="fs-4" id="receipt-total">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+        <div id="system-toast" class="toast align-items-center text-white bg-success border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold fs-6" id="system-toast-body">
+                    <!-- Toast message -->
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Apertura de Caja Modal (Mandatory) -->
+    <div class="modal fade" id="apertura-caja-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white border-0" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h5 class="modal-title"><i class="fa-solid fa-cash-register me-2"></i>Apertura de Caja</h5>
+                    <!-- NO CLOSE BUTTON -->
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-muted small mb-3">Ingrese el monto inicial con el que abre la caja hoy para dar vuelto.</p>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control form-control-lg text-center fw-bold" id="apertura-monto" min="0" step="0.01" required>
+                    </div>
+                    <button class="btn btn-primary w-100 btn-lg" id="btn-submit-apertura">Confirmar Fondo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cierre de Caja Modal -->
+    <div class="modal fade" id="cierre-caja-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning text-dark border-0">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-lock me-2"></i>Confirmar Cierre de Caja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="mb-2">Efectivo esperado físicamente en caja:</p>
+                    <h1 class="display-4 fw-bolder text-success mb-3" id="cierre-esperado-display">$0.00</h1>
+                    <div class="mb-3 text-start bg-light p-3 rounded text-dark">
+                        <h6 class="fw-bold border-bottom pb-2"><i class="fa-solid fa-clock me-2"></i>Horarios Activos (Turnos)</h6>
+                        <ul class="list-unstyled mb-0 small" id="cierre-horarios-list">
+                            <li class="text-muted fst-italic">Cargando horarios...</li>
+                        </ul>
+                    </div>
+                    <div class="alert alert-danger mb-0" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Advertencia:</strong> Una vez cerrada, no podrá registrar más ventas ni fiados en este turno.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger fw-bold" id="btn-submit-cierre"><i class="fa-solid fa-lock me-2"></i>Cerrar Caja Definitivamente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mandatory Password Change Modal -->
+    <div class="modal fade" id="cambio-clave-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-shield-halved me-2"></i>Actualización de Seguridad</h5>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning small mb-4">
+                        Por motivos de seguridad, debe cambiar su contraseña generada por el sistema antes de continuar utilizando el punto de venta.
+                    </div>
+                    <form id="cambio-clave-form">
+                        <div class="mb-3">
+                            <label for="new-password" class="form-label fw-bold">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="new-password" minlength="6" required placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirm-new-password" class="form-label fw-bold">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="confirm-new-password" minlength="6" required placeholder="Repita la contraseña">
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100 fw-bold" id="btn-submit-password">
+                            <i class="fa-solid fa-key me-2"></i>Actualizar Contraseña
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jsPDF and AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+/* 
+ * POS - Panadería Reina del Cisne 
+ * Premium Aesthetic Bakery Stylesheet
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Primary Accent: Rich golden wheat / caramel */
+    --primary-color: #D48842; 
+    --primary-hover: #C07530; 
+    
+    /* Secondary Accent / Success: Warm sage green for checkout */
+    --success-color: #6B8F71;
+    --success-hover: #5A7B5F;
+    
+    /* Backgrounds: Warm creams and soft whites */
+    --bg-cream: #FAF3E0; 
+    --bg-light: #FFFFFF; 
+    
+    /* Typography: Deep espresso browns instead of harsh black/gray */
+    --text-dark: #3E2723; /* Very dark brown */
+    --text-muted: #8D6E63; /* Medium brown */
+    
+    /* UI Borders and Lines */
+    --border-color: rgba(141, 110, 99, 0.15);
+    
+    /* Navbar / Headers: Dark Roast Coffee */
+    --nav-bg: #4E342E; 
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 20px rgba(62, 39, 35, 0.04);
+    --shadow-hover: 0 10px 30px rgba(62, 39, 35, 0.08);
+}
+
+/* Global Styles */
+body {
+    background-color: var(--bg-cream) !important;
+    color: var(--text-dark);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Overriding Bootstrap Utility Classes for Consistency */
+.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+.text-primary {
+    color: var(--primary-color) !important;
+}
+.bg-success {
+    background-color: var(--success-color) !important;
+}
+.text-success {
+    color: var(--success-color) !important;
+}
+.bg-dark {
+    background-color: var(--nav-bg) !important;
+}
+.text-dark {
+    color: var(--text-dark) !important;
+}
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Navbar Customization */
+.navbar-dark.bg-dark {
+    background: var(--nav-bg) !important;
+    box-shadow: 0 4px 12px rgba(62, 39, 35, 0.08);
+    padding: 1rem 0;
+    border-bottom: 2px solid var(--primary-color); /* Elegant accent line */
+}
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+.navbar-brand, .nav-link {
+    color: #ffffff !important;
+}
+.nav-link {
+    font-weight: 500;
+    transition: opacity 0.3s;
+}
+.nav-link:hover {
+    opacity: 0.8;
+    color: var(--primary-color) !important;
+}
+
+/* Typography & Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-dark);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+/* General Cards (Glassmorphism & Soft UI) */
+.card {
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+}
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+}
+/* Ensure the login card header text stays white since we override bg-primary */
+.card-header.bg-primary {
+    border-bottom: none;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+.card-footer {
+    background: transparent;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Styled Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary {
+    background: var(--primary-color);
+    border: none;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(212, 136, 66, 0.25);
+}
+.btn-primary:hover, .btn-primary:focus {
+    transform: translateY(-2px);
+    background: var(--primary-hover);
+    box-shadow: 0 6px 15px rgba(212, 136, 66, 0.35);
+    color: #ffffff;
+}
+
+.btn-success {
+    background: var(--success-color);
+    border: none;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(107, 143, 113, 0.25);
+}
+.btn-success:hover, .btn-success:focus {
+    transform: translateY(-2px);
+    background: var(--success-hover);
+    box-shadow: 0 6px 15px rgba(107, 143, 113, 0.35);
+    color: #ffffff;
+}
+
+/* -----------------------------
+   POS View: Product Cards
+-------------------------------- */
+.product-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-soft);
+}
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-hover);
+    background: rgba(255, 255, 255, 1);
+}
+
+.product-img-container {
+    height: 160px;
+    background-color: rgba(141, 110, 99, 0.05); /* Very light brown tint */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(141, 110, 99, 0.08);
+}
+.product-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.product-card:hover .product-img-container img {
+    transform: scale(1.05);
+}
+
+/* Fallback icon styling */
+.product-img-container i {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.product-details {
+    padding: 16px;
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.product-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.product-price {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    font-weight: 700;
+    margin: 0;
+}
+
+/* -----------------------------
+   POS View: Ticket / Cart Area
+-------------------------------- */
+#cart-items {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 0 10px;
+}
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--border-color);
+    background: transparent;
+}
+.cart-item:last-child {
+    border-bottom: none;
+}
+.cart-item-details {
+    flex-grow: 1;
+}
+.cart-item-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--text-dark);
+}
+.cart-item-price {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+.cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(141, 110, 99, 0.05);
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+.qty-btn {
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+    color: var(--text-dark);
+    box-shadow: 0 2px 4px rgba(62, 39, 35, 0.02);
+}
+.qty-btn:hover {
+    background: var(--bg-cream);
+    color: var(--primary-color);
+}
+.btn-remove {
+    background: #FFEBEE;
+    color: #D32F2F;
+    border-color: #FFCDD2;
+}
+.btn-remove:hover {
+    background: #FFCDD2;
+    color: #B71C1C;
+}
+.qty-display {
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+    color: var(--text-dark);
+}
+
+/* -----------------------------
+   Inventory View Table
+-------------------------------- */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border-color);
+    background: #ffffff;
+}
+.table {
+    margin-bottom: 0;
+}
+#inventory-table th {
+    background-color: rgba(141, 110, 99, 0.05);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+#inventory-table td {
+    vertical-align: middle;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: #ffffff;
+    color: var(--text-dark);
+}
+#inventory-table tbody tr:hover td {
+    background-color: var(--bg-cream);
+}
+.stock-badge {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Custom Table Action Buttons */
+.btn-outline-primary {
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.btn-outline-danger {
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    color: #D32F2F;
+    border-color: #D32F2F;
+}
+.btn-outline-danger:hover {
+    background-color: #D32F2F;
+    color: #ffffff;
+}
+
+/* -----------------------------
+   Utilities
+-------------------------------- */
+.hidden {
+    display: none !important;
+}
+
+/* Custom Scrollbar for Cart */
+#cart-items::-webkit-scrollbar {
+    width: 6px;
+}
+#cart-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+#cart-items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+#cart-items::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* -----------------------------
+   Responsive Adjustments
+-------------------------------- */
+@media (max-width: 768px) {
+    .product-img-container {
+        height: 120px;
+    }
+    .product-title {
+        font-size: 1rem;
+    }
+    .product-price {
+        font-size: 1.1rem;
+    }
+    
+    #cart-items {
+        max-height: none; 
+    }
+    .card-body {
+        padding: 1rem;
+    }
+}
